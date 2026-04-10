@@ -1,44 +1,62 @@
-package projectcode;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 public class Food {
+    String foodName;
+    int calories;
+    private static ArrayList<Food> selectedFoods = new ArrayList<>();
 
-    private Map<String, Double> foodMap;
-    private double totalCalories;
-
-    public Food() {
-        foodMap = new HashMap<>();
-
-        foodMap.put("pizza", 266.0);
-        foodMap.put("burger", 295.0);
-        foodMap.put("salad", 152.0);
-        foodMap.put("pasta", 131.0);
-        foodMap.put("rice", 130.0);
+    public Food(String foodName, int calories) {
+        this.foodName = foodName;
+        this.calories = calories;
     }
 
-    public void showFoodList() {
-        System.out.println("\nAvailable Foods:");
-        for (String food : foodMap.keySet()) {
-            System.out.println(food + " (" + foodMap.get(food) + " cal per 100g)");
+    public String getFoodName() { return foodName; }
+    public int getCalories()    { return calories; }
+
+    public static ArrayList<Food> getfFoods() {
+        ArrayList<Food> foods = new ArrayList<>();
+        foods.add(new Food("Eggs",    150));
+        foods.add(new Food("Daal",    150));
+        foods.add(new Food("Meat",    250));
+        foods.add(new Food("Rice",    200));
+        foods.add(new Food("Chicken", 220));
+        foods.add(new Food("Salad",    80));
+        foods.add(new Food("Pasta",   300));
+        foods.add(new Food("Burger",  500));
+        return foods;
+    }
+
+    public void showFoodList(ArrayList<Food> foods) {
+        System.out.println("\n------- Available Foods -------");
+        for (Food f : foods) {
+            System.out.println(f.getFoodName() + " - " + f.getCalories() + " cal/100g");
         }
     }
 
-    public boolean selectFood(String name, double grams) {
-
-        name = name.toLowerCase();
-
-        if (!foodMap.containsKey(name)) return false;
-
-        double calPer100 = foodMap.get(name);
-        double calories = (grams / 100.0) * calPer100;
-
-        totalCalories += calories;
-        return true;
+    // selectFood by name string, as per the proposal
+    public boolean selectFood(String name, ArrayList<Food> foods) {
+        for (Food f : foods) {
+            if (f.getFoodName().equalsIgnoreCase(name)) {
+                selectedFoods.add(f);
+                System.out.println(f.getFoodName() + " added! (" + f.getCalories() + " cal)");
+                return true;
+            }
+        }
+        System.out.println("Food not found: " + name);
+        return false;
     }
 
-    public double getCalories() {
-        return totalCalories;
+    // getCalories returns total of selected foods
+    public int getCalories() {
+        // renamed to avoid clash — see getTotalCalories()
+        return getTotalCalories();
     }
+
+    public int getTotalCalories() {
+        int total = 0;
+        for (Food f : selectedFoods) total += f.getCalories();
+        return total;
+    }
+
+    public ArrayList<Food> getSelectedFoods() { return selectedFoods; }
 }
