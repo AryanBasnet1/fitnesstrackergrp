@@ -1,4 +1,4 @@
-/*@@ -1,27 +1,61 @@
+@@ -1,27 +1,61 @@
 
 Create a list of foods
 Add each food with its name and calories into the list
@@ -60,6 +60,3 @@ public void showFoodList(ArrayList<Food> foods){
 
 
 
-
-
-*/
