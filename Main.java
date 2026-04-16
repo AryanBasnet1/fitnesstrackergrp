@@ -20,6 +20,7 @@ public class Main extends JFrame
     private final Food        food        = new Food();
     private final Workout     workout     = new Workout();
     private final FitnessRank fitnessRank = new FitnessRank();
+    private final UserProfile userProfile = new UserProfile();
 
     // ── Palette ──────────────────────────────────────────────────────────────
     static final Color BG        = new Color(13,  17,  23);
@@ -61,6 +62,16 @@ public class Main extends JFrame
     // Dashboard labels
     private JLabel dashCalIn, dashCalBurned, dashNet, dashRank, dashPoints;
     private JProgressBar dashBar;
+
+    // Profile tab fields
+    private JTextField profAgeField, profWeightField, profHeightField;
+    private JComboBox<UserProfile.ActivityLevel> profActivityCombo;
+    private JComboBox<UserProfile.Goal>          profGoalCombo;
+    private JComboBox<String>                    profSexCombo;
+    private JLabel profBmiLabel, profBmiCatLabel, profTdeeLabel, profGoalCalLabel, profStatusLabel;
+
+    // Dashboard BMI / calorie goal labels
+    private JLabel dashCalGoal, dashBmiStatus, dashWorkoutAdvice;
 
     // ── Nav buttons (to highlight active) ───────────────────────────────────
     private final Map<String, JButton> navButtons = new LinkedHashMap<>();
@@ -119,6 +130,7 @@ public class Main extends JFrame
         // Nav items
         String[][] navItems = {
             {"📊", "Dashboard"},
+            {"👤", "Profile"},
             {"🍽", "Food"},
             {"🏋", "Workout"},
             {"🏆", "Rank"},
@@ -183,8 +195,9 @@ public class Main extends JFrame
     {
         navButtons.forEach((k, b) -> b.putClientProperty("active", k.equals(card)));
         navButtons.forEach((k, b) -> b.repaint());
-        if (card.equals("Rank"))     refreshRank();
-        if (card.equals("Dashboard")) refreshDashboard();
+        if (card.equals("Rank"))      refreshRank();
+        if (card.equals("Dashboard"))  refreshDashboard();
+        if (card.equals("Workout"))    refreshWorkoutAdvice();
         cardLayout.show(cardPanel, card);
     }
 
@@ -195,12 +208,234 @@ public class Main extends JFrame
         cardPanel  = new JPanel(cardLayout);
         cardPanel.setBackground(BG);
 
-        cardPanel.add(buildDashboard(), "Dashboard");
-        cardPanel.add(buildFoodPanel(), "Food");
-        cardPanel.add(buildWorkoutPanel(), "Workout");
-        cardPanel.add(buildRankPanel(),  "Rank");
+        cardPanel.add(buildDashboard(),   "Dashboard");
+        cardPanel.add(buildProfilePanel(),"Profile");
+        cardPanel.add(buildFoodPanel(),   "Food");
+        cardPanel.add(buildWorkoutPanel(),"Workout");
+        cardPanel.add(buildRankPanel(),   "Rank");
 
         return cardPanel;
+    }
+
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  PROFILE PANEL
+    // ════════════════════════════════════════════════════════════════════════
+    private JPanel buildProfilePanel()
+    {
+        JPanel p = darkPanel();
+        p.setLayout(new BorderLayout(0, 16));
+        p.setBorder(new EmptyBorder(32, 36, 32, 36));
+        p.add(sectionTitle("👤  My Profile & BMI"), BorderLayout.NORTH);
+
+        // ── Input form card ──────────────────────────────────────────────────
+        JPanel formCard = card();
+        formCard.setLayout(new GridBagLayout());
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.insets  = new Insets(8, 10, 8, 10);
+        gc.anchor  = GridBagConstraints.WEST;
+
+        // Row 0: age / sex
+        gc.gridx = 0; gc.gridy = 0; formCard.add(muted("Age:"), gc);
+        gc.gridx = 1; profAgeField = styledField(70); formCard.add(profAgeField, gc);
+
+        gc.gridx = 2; formCard.add(muted("Sex:"), gc);
+        gc.gridx = 3;
+        profSexCombo = new JComboBox<>(new String[]{"Male", "Female"});
+        style(profSexCombo);
+        profSexCombo.setPreferredSize(new Dimension(110, 30));
+        formCard.add(profSexCombo, gc);
+
+        // Row 1: weight / height
+        gc.gridx = 0; gc.gridy = 1; formCard.add(muted("Weight (kg):"), gc);
+        gc.gridx = 1; profWeightField = styledField(70); formCard.add(profWeightField, gc);
+
+        gc.gridx = 2; formCard.add(muted("Height (cm):"), gc);
+        gc.gridx = 3; profHeightField = styledField(70); formCard.add(profHeightField, gc);
+
+        // Row 2: activity / goal
+        gc.gridx = 0; gc.gridy = 2; formCard.add(muted("Activity level:"), gc);
+        gc.gridx = 1; gc.gridwidth = 1;
+        profActivityCombo = new JComboBox<>(UserProfile.ActivityLevel.values());
+        style(profActivityCombo);
+        profActivityCombo.setPreferredSize(new Dimension(260, 30));
+        formCard.add(profActivityCombo, gc);
+
+        gc.gridx = 2; formCard.add(muted("Goal:"), gc);
+        gc.gridx = 3;
+        profGoalCombo = new JComboBox<>(UserProfile.Goal.values());
+        style(profGoalCombo);
+        profGoalCombo.setPreferredSize(new Dimension(160, 30));
+        formCard.add(profGoalCombo, gc);
+
+        // Row 3: Save button
+        gc.gridx = 0; gc.gridy = 3; gc.gridwidth = 4;
+        gc.anchor = GridBagConstraints.CENTER;
+        JButton saveBtn = accentButton("💾  Save Profile", ACCENT);
+        formCard.add(saveBtn, gc);
+
+        // ── BMI Result card ──────────────────────────────────────────────────
+        JPanel bmiCard = card();
+        bmiCard.setLayout(new BoxLayout(bmiCard, BoxLayout.Y_AXIS));
+        bmiCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BORDER, 1, true),
+            new EmptyBorder(18, 24, 18, 24)));
+
+        JLabel bmiTitle = new JLabel("BMI Report");
+        bmiTitle.setFont(new Font("Georgia", Font.BOLD, 16));
+        bmiTitle.setForeground(TEXT);
+        bmiTitle.setAlignmentX(CENTER_ALIGNMENT);
+        bmiCard.add(bmiTitle);
+        bmiCard.add(Box.createVerticalStrut(12));
+
+        profBmiLabel = new JLabel("—");
+        profBmiLabel.setFont(new Font("Georgia", Font.BOLD, 42));
+        profBmiLabel.setForeground(ACCENT);
+        profBmiLabel.setAlignmentX(CENTER_ALIGNMENT);
+        bmiCard.add(profBmiLabel);
+
+        profBmiCatLabel = new JLabel("Enter your details above");
+        profBmiCatLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        profBmiCatLabel.setForeground(MUTED);
+        profBmiCatLabel.setAlignmentX(CENTER_ALIGNMENT);
+        bmiCard.add(profBmiCatLabel);
+        bmiCard.add(Box.createVerticalStrut(16));
+
+        // Scale reference
+        JPanel scaleRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        scaleRow.setOpaque(false);
+        addBmiBand(scaleRow, "< 18.5",    "Underweight", ACCENT);
+        addBmiBand(scaleRow, "18.5 – 25", "Normal",      GREEN);
+        addBmiBand(scaleRow, "25 – 30",   "Overweight",  ORANGE);
+        addBmiBand(scaleRow, "> 30",      "Obese",       RED);
+        bmiCard.add(scaleRow);
+        bmiCard.add(Box.createVerticalStrut(16));
+
+        // ── Calorie report card ──────────────────────────────────────────────
+        JPanel calCard = card();
+        calCard.setLayout(new BoxLayout(calCard, BoxLayout.Y_AXIS));
+        calCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BORDER, 1, true),
+            new EmptyBorder(14, 24, 14, 24)));
+
+        JLabel calTitle = new JLabel("Daily Calorie Targets");
+        calTitle.setFont(new Font("Georgia", Font.BOLD, 15));
+        calTitle.setForeground(TEXT);
+        calTitle.setAlignmentX(LEFT_ALIGNMENT);
+        calCard.add(calTitle);
+        calCard.add(Box.createVerticalStrut(10));
+
+        profTdeeLabel    = infoRow(calCard, "TDEE (maintenance):", "—");
+        profGoalCalLabel = infoRow(calCard, "Your daily goal:",    "—");
+        calCard.add(Box.createVerticalStrut(10));
+        profStatusLabel = new JLabel("Save your profile to see personalised advice.");
+        profStatusLabel.setFont(new Font("SansSerif", Font.ITALIC, 13));
+        profStatusLabel.setForeground(MUTED);
+        profStatusLabel.setAlignmentX(LEFT_ALIGNMENT);
+        calCard.add(profStatusLabel);
+
+        // ── Layout ───────────────────────────────────────────────────────────
+        JPanel center = new JPanel(new BorderLayout(0, 12));
+        center.setOpaque(false);
+        center.add(formCard, BorderLayout.NORTH);
+
+        JPanel infoRow2 = new JPanel(new GridLayout(1, 2, 12, 0));
+        infoRow2.setOpaque(false);
+        infoRow2.add(bmiCard);
+        infoRow2.add(calCard);
+        center.add(infoRow2, BorderLayout.CENTER);
+
+        p.add(center, BorderLayout.CENTER);
+
+        // ── Save action ──────────────────────────────────────────────────────
+        saveBtn.addActionListener(e -> {
+            try {
+                double w  = Double.parseDouble(profWeightField.getText().trim());
+                double h  = Double.parseDouble(profHeightField.getText().trim());
+                int    a  = Integer.parseInt(profAgeField.getText().trim());
+                if (w <= 0 || h <= 0 || a <= 0)
+                    throw new NumberFormatException("non-positive");
+
+                boolean male = profSexCombo.getSelectedItem().equals("Male");
+                UserProfile.ActivityLevel act =
+                    (UserProfile.ActivityLevel) profActivityCombo.getSelectedItem();
+                UserProfile.Goal goal2 =
+                    (UserProfile.Goal) profGoalCombo.getSelectedItem();
+
+                userProfile.setProfile(w, h, a, male, act, goal2);
+                refreshProfileDisplay();
+                JOptionPane.showMessageDialog(this,
+                    "Profile saved! Your Dashboard has been updated.",
+                    "Saved", JOptionPane.INFORMATION_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Please enter valid positive numbers for age, weight, and height.",
+                    "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        return p;
+    }
+
+    private JLabel infoRow(JPanel parent, String label, String value)
+    {
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
+        row.setOpaque(false);
+        row.setAlignmentX(LEFT_ALIGNMENT);
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        lbl.setForeground(MUTED);
+        JLabel val = new JLabel(value);
+        val.setFont(new Font("SansSerif", Font.BOLD, 13));
+        val.setForeground(TEXT);
+        row.add(lbl);
+        row.add(val);
+        parent.add(row);
+        return val;
+    }
+
+    private void addBmiBand(JPanel parent, String range, String label, Color col)
+    {
+        JPanel b = new JPanel();
+        b.setBackground(new Color(col.getRed(), col.getGreen(), col.getBlue(), 40));
+        b.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(col, 1, true),
+            new EmptyBorder(4, 8, 4, 8)));
+        b.setLayout(new BoxLayout(b, BoxLayout.Y_AXIS));
+        JLabel r = new JLabel(range);
+        r.setFont(new Font("SansSerif", Font.BOLD, 10));
+        r.setForeground(col);
+        r.setAlignmentX(CENTER_ALIGNMENT);
+        JLabel l = new JLabel(label);
+        l.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        l.setForeground(MUTED);
+        l.setAlignmentX(CENTER_ALIGNMENT);
+        b.add(r); b.add(l);
+        parent.add(b);
+    }
+
+    private void refreshProfileDisplay()
+    {
+        if (!userProfile.isProfileSet()) return;
+        double bmi = userProfile.getBMI();
+        String cat = userProfile.getBMICategory();
+
+        profBmiLabel.setText(String.valueOf(bmi));
+        profBmiCatLabel.setText(cat + "  " + userProfile.getBMIEmoji());
+
+        Color bmiColor = cat.equals("Normal weight") ? GREEN
+                       : cat.equals("Underweight")   ? ACCENT
+                       : cat.equals("Overweight")    ? ORANGE : RED;
+        profBmiLabel.setForeground(bmiColor);
+        profBmiCatLabel.setForeground(bmiColor);
+
+        profTdeeLabel.setText(String.format("%.0f kcal / day", userProfile.getTDEE()));
+        profGoalCalLabel.setText(String.format("%.0f kcal / day  (%s)",
+            userProfile.getDailyCalorieGoal(), userProfile.getGoal()));
+
+        double consumed = food.getTotalCalories();
+        profStatusLabel.setText(userProfile.getCalorieStatusMessage(consumed));
+        profStatusLabel.setForeground(userProfile.getRemainingCalories(consumed) >= 0 ? GREEN : RED);
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -217,15 +452,41 @@ public class Main extends JFrame
         p.add(title, BorderLayout.NORTH);
 
         // Summary cards row
+        // Top row: 3 calorie stats
         JPanel cards = new JPanel(new GridLayout(1, 3, 16, 0));
         cards.setOpaque(false);
-        cards.setBorder(new EmptyBorder(24, 0, 24, 0));
+        cards.setBorder(new EmptyBorder(24, 0, 8, 0));
 
         dashCalIn      = statCard(cards, "Calories In",    "0 kcal",  ORANGE);
         dashCalBurned  = statCard(cards, "Calories Burned","0 kcal",  GREEN);
         dashNet        = statCard(cards, "Net Calories",   "0 kcal",  ACCENT);
 
-        p.add(cards, BorderLayout.CENTER);
+        // Second row: goal + BMI
+        JPanel cards2 = new JPanel(new GridLayout(1, 2, 16, 0));
+        cards2.setOpaque(false);
+        cards2.setBorder(new EmptyBorder(0, 0, 8, 0));
+
+        dashCalGoal    = statCard(cards2, "Daily Calorie Goal", "Set profile ▶", MUTED);
+        dashBmiStatus  = statCard(cards2, "BMI Status",         "Set profile ▶", MUTED);
+
+        // Workout advice banner
+        JPanel adviceCard = new JPanel(new BorderLayout());
+        adviceCard.setBackground(CARD);
+        adviceCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BORDER, 1, true),
+            new EmptyBorder(10, 16, 10, 16)));
+        dashWorkoutAdvice = new JLabel("Set up your profile to get smart workout recommendations.");
+        dashWorkoutAdvice.setFont(new Font("SansSerif", Font.ITALIC, 13));
+        dashWorkoutAdvice.setForeground(ACCENT);
+        adviceCard.add(dashWorkoutAdvice, BorderLayout.CENTER);
+
+        JPanel centerGrid = new JPanel(new BorderLayout(0, 8));
+        centerGrid.setOpaque(false);
+        centerGrid.add(cards,      BorderLayout.NORTH);
+        centerGrid.add(cards2,     BorderLayout.CENTER);
+        centerGrid.add(adviceCard, BorderLayout.SOUTH);
+
+        p.add(centerGrid, BorderLayout.CENTER);
 
         // Bottom: rank summary
         JPanel bottom = new JPanel();
@@ -308,6 +569,36 @@ public class Main extends JFrame
         dashRank.setText(fitnessRank.calculateRank() + " " + fitnessRank.getRankEmoji());
         dashPoints.setText(fitnessRank.getTotalPoints() + " pts");
         dashBar.setValue(fitnessRank.getTierProgress());
+
+        if (userProfile.isProfileSet())
+        {
+            double goal = userProfile.getDailyCalorieGoal();
+            dashCalGoal.setText(String.format("%.0f kcal", goal));
+            dashCalGoal.setForeground(ACCENT);
+
+            double bmi = userProfile.getBMI();
+            String cat = userProfile.getBMICategory();
+            dashBmiStatus.setText(String.format("%.1f — %s %s", bmi, cat, userProfile.getBMIEmoji()));
+            Color bmiColor = cat.equals("Normal weight") ? GREEN
+                           : cat.equals("Underweight")   ? ACCENT
+                           : cat.equals("Overweight")    ? ORANGE : RED;
+            dashBmiStatus.setForeground(bmiColor);
+
+            dashWorkoutAdvice.setText(userProfile.getWorkoutRecommendationReason(calIn));
+            Effort rec = userProfile.getRecommendedEffort(calIn);
+            Color advColor = rec == Effort.HIGH ? RED : rec == Effort.MEDIUM ? ORANGE : GREEN;
+            dashWorkoutAdvice.setForeground(advColor);
+        }
+    }
+
+    private void refreshWorkoutAdvice()
+    {
+        // Pre-select effort in workout tab based on profile recommendation
+        if (userProfile.isProfileSet() && effortCombo != null)
+        {
+            Effort rec = userProfile.getRecommendedEffort(food.getTotalCalories());
+            effortCombo.setSelectedItem(rec);
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════════
