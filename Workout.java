@@ -53,6 +53,31 @@ public class Workout
         return results;
     }
 
+    /**
+     * Returns workouts filtered by a recommended effort level (from UserProfile)
+     * and available time. Falls back to one level lower if no results found.
+     */
+    public List<WorkoutList> getSuggestedWorkoutsByEffort(Effort recommendedEffort)
+    {
+        List<WorkoutList> results = new ArrayList<>();
+        for (WorkoutList w : WorkoutList.values())
+        {
+            if (w.getEffort() == recommendedEffort && w.getMinMinutes() <= availableMinutes)
+                results.add(w);
+        }
+        // fallback: try one level lower if nothing matched
+        if (results.isEmpty() && recommendedEffort != Effort.LOW)
+        {
+            Effort fallback = (recommendedEffort == Effort.HIGH) ? Effort.MEDIUM : Effort.LOW;
+            for (WorkoutList w : WorkoutList.values())
+            {
+                if (w.getEffort() == fallback && w.getMinMinutes() <= availableMinutes)
+                    results.add(w);
+            }
+        }
+        return results;
+    }
+
     // ── Log a completed session ───────────────────────────────────────────────
 
     /**
