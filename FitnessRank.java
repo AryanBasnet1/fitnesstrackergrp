@@ -1,28 +1,31 @@
 package projectcode;
 
-/**
- * Accumulates fitness points from calories consumed and workouts completed,
- * then maps the total to a rank tier.
- *
- * Point formula:
- *   +workoutPoints   (calories burned ÷ 10, supplied by Workout)
- *   -caloriePoints   (calories consumed ÷ 100, supplied by Food)
- *
- * Net points climb when the user works out more than they eat (calorie-wise).
+/*
+  Accumulates fitness points from calories consumed and workouts completed,
+ *then maps the total to a rank tier.
+ 
+  Point formula:
+    +workoutPoints   (calories burned ÷ 10, supplied by Workout)
+    -caloriePoints   (calories consumed ÷ 100, supplied by Food)
+ 
+  
  */
 public class FitnessRank
 {
     private int totalPoints;
 
-    public FitnessRank() {}
+    public FitnessRank() 
+    {
+    	this.totalPoints = 0; //default value
+    }
 
-    // ── Point update ─────────────────────────────────────────────────────────
+ 
 
-    /**
-     * Recalculates total points from scratch.
-     *
-     * @param caloriesConsumed  total food calories (from Food.getTotalCalories())
-     * @param workoutPoints     points earned from workouts (from Workout.getWorkoutPoints())
+    /*
+      Recalculates total points from scratch.
+     
+       caloriesConsumed  total food calories (from Food.getTotalCalories())
+       workoutPoints     points earned from workouts (from Workout.getWorkoutPoints())
      */
     public void updatePoints(int caloriesConsumed, int workoutPoints)
     {
@@ -31,18 +34,30 @@ public class FitnessRank
         this.totalPoints = Math.max(0, workoutPoints - penalty);
     }
 
-    // ── Rank calculation ─────────────────────────────────────────────────────
+    //Rank Calculation
 
     public String calculateRank()
-    {
-        if      (totalPoints <  100) return "Beginner";
-        else if (totalPoints <  300) return "Intermediate";
-        else if (totalPoints <  600) return "Advanced";
-        else                         return "Elite";
+    { //calculates rank based on total points earned
+        if (totalPoints <  100)
+        	{
+        	return "Beginner";
+        	}
+        else if (totalPoints <  300)
+        	{
+        	return "Intermediate";
+        	}
+        else if (totalPoints <  600)
+        	{
+        	return "Advanced";
+        	}
+        else                         
+        	{
+        	return "Elite";
+        	}
     }
 
     public String getRankEmoji()
-    {
+    { //returns an emoji based on the users rank
         switch (calculateRank())
         {
             case "Elite":        return "🏆";
@@ -53,7 +68,7 @@ public class FitnessRank
     }
 
     public String getMotivation()
-    {
+    { //returns a message based on what the users workout level is
         switch (calculateRank())
         {
             case "Elite":        return "Outstanding! You are at the top!";
@@ -63,9 +78,9 @@ public class FitnessRank
         }
     }
 
-    /** 0-100 progress within the current tier (for progress bars). */
+    // 0-100 progress within the current tier (for progress bars). 
     public int getTierProgress()
-    {
+    { //returns users progress based on their total points
         switch (calculateRank())
         {
             case "Beginner":     return (int)((totalPoints / 100.0)  * 100);
@@ -75,7 +90,7 @@ public class FitnessRank
         }
     }
 
-    // ── Console display (kept for non-GUI use) ───────────────────────────────
+    // Console display (kept for non-GUI testing) 
 
     public void displayRank()
     {
@@ -85,7 +100,10 @@ public class FitnessRank
         System.out.println(getMotivation());
     }
 
-    // ── Getters ──────────────────────────────────────────────────────────────
+    //Getters
 
-    public int getTotalPoints() { return totalPoints; }
+    public int getTotalPoints() 
+    { 
+    	return totalPoints;
+    }
 }

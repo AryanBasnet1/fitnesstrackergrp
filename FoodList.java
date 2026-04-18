@@ -2,7 +2,7 @@ package projectcode;
 
 public enum FoodList
 {
-    // ── Meals ──────────────────────────────────────────────
+    //Meals
     Pizza       (22.5),
     Burger      (13.6),
     Pasta       ( 5.6),
@@ -24,7 +24,7 @@ public enum FoodList
     Pancakes    ( 9.3),
     Waffles     ( 7.4),
 
-    // ── Desserts ───────────────────────────────────────────
+    //Desserts
     IceCream    (23.1),
     Cake        (25.7),
     Donut       (18.9),
@@ -33,25 +33,25 @@ public enum FoodList
     Cheesecake  (35.2),
     Pudding     (11.2),
 
-    // ── Drinks ────────────────────────────────────────────
+    //Drinks
     Milkshake   (45.2),
     Smoothie    (13.2),
     Yogurt      (16.1);
 
-    // ─────────────────────────────────────────────────────
+   //class variable
     private final double caloriesPerGram;
 
     FoodList(double caloriesPerGram)
-    {
+    { //sets the calories
         this.caloriesPerGram = caloriesPerGram;
     }
 
     public double getCaloriesPerGram()
-    {
+    { //returns num of calories associated with the constant
         return caloriesPerGram;
     }
 
-    /** Shown in combo-boxes: "Pizza (22.5 cal/g)" */
+    /* Shown in combo-boxes: "Pizza (22.5 cal/g)" */
     @Override
     public String toString()
     {

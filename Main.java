@@ -16,13 +16,13 @@ import java.util.List;
  */
 public class Main extends JFrame
 {
-    // ── Model ────────────────────────────────────────────────────────────────
+    //Model
     private final Food        food        = new Food();
     private final Workout     workout     = new Workout();
     private final FitnessRank fitnessRank = new FitnessRank();
     private final UserProfile userProfile = new UserProfile();
 
-    // ── Palette ──────────────────────────────────────────────────────────────
+    //Palette
     static final Color BG        = new Color(13,  17,  23);
     static final Color CARD      = new Color(22,  27,  34);
     static final Color BORDER    = new Color(48,  54,  61);
@@ -33,7 +33,7 @@ public class Main extends JFrame
     static final Color TEXT      = new Color(230,237,243);
     static final Color MUTED     = new Color(139,148,158);
 
-    // ── Cards ────────────────────────────────────────────────────────────────
+    //Cards
     private CardLayout cardLayout;
     private JPanel     cardPanel;
 
@@ -94,7 +94,7 @@ public class Main extends JFrame
         setVisible(true);
     }
 
-    // ── Sidebar ──────────────────────────────────────────────────────────────
+    //Sidebar
     private JPanel buildSidebar()
     {
         JPanel side = new JPanel();
@@ -218,9 +218,8 @@ public class Main extends JFrame
     }
 
 
-    // ════════════════════════════════════════════════════════════════════════
+
     //  PROFILE PANEL
-    // ════════════════════════════════════════════════════════════════════════
     private JPanel buildProfilePanel()
     {
         JPanel p = darkPanel();
@@ -311,7 +310,7 @@ public class Main extends JFrame
         bmiCard.add(scaleRow);
         bmiCard.add(Box.createVerticalStrut(16));
 
-        // ── Calorie report card ──────────────────────────────────────────────
+        //Calorie report card
         JPanel calCard = card();
         calCard.setLayout(new BoxLayout(calCard, BoxLayout.Y_AXIS));
         calCard.setBorder(BorderFactory.createCompoundBorder(
@@ -334,7 +333,7 @@ public class Main extends JFrame
         profStatusLabel.setAlignmentX(LEFT_ALIGNMENT);
         calCard.add(profStatusLabel);
 
-        // ── Layout ───────────────────────────────────────────────────────────
+        //Layout
         JPanel center = new JPanel(new BorderLayout(0, 12));
         center.setOpaque(false);
         center.add(formCard, BorderLayout.NORTH);
@@ -347,7 +346,7 @@ public class Main extends JFrame
 
         p.add(center, BorderLayout.CENTER);
 
-        // ── Save action ──────────────────────────────────────────────────────
+        //Save action
         saveBtn.addActionListener(e -> {
             try {
                 double w  = Double.parseDouble(profWeightField.getText().trim());
@@ -438,9 +437,8 @@ public class Main extends JFrame
         profStatusLabel.setForeground(userProfile.getRemainingCalories(consumed) >= 0 ? GREEN : RED);
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  DASHBOARD
-    // ════════════════════════════════════════════════════════════════════════
+    
+    // DASHBOARD
     private JPanel buildDashboard()
     {
         JPanel p = darkPanel();
@@ -601,9 +599,8 @@ public class Main extends JFrame
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
+   
     //  FOOD PANEL
-    // ════════════════════════════════════════════════════════════════════════
     private JPanel buildFoodPanel()
     {
         JPanel p = darkPanel();
@@ -611,7 +608,7 @@ public class Main extends JFrame
         p.setBorder(new EmptyBorder(32, 36, 32, 36));
         p.add(sectionTitle("🍽  Food Log"), BorderLayout.NORTH);
 
-        // ── Input card ──────────────────────────────────────────────────────
+        //Input card
         JPanel inputCard = card();
         inputCard.setLayout(new FlowLayout(FlowLayout.LEFT, 14, 12));
 
@@ -701,9 +698,8 @@ public class Main extends JFrame
         totalCalLabel.setText("Total: " + food.getTotalCalories() + " kcal");
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  WORKOUT PANEL
-    // ════════════════════════════════════════════════════════════════════════
+    //Workout Panel
+
     private JPanel buildWorkoutPanel()
     {
         JPanel p = darkPanel();
@@ -711,7 +707,7 @@ public class Main extends JFrame
         p.setBorder(new EmptyBorder(32, 36, 32, 36));
         p.add(sectionTitle("🏋  Workout"), BorderLayout.NORTH);
 
-        // ── Filter card ──────────────────────────────────────────────────────
+        //Filter card
         JPanel filterCard = card();
         filterCard.setLayout(new FlowLayout(FlowLayout.LEFT, 14, 12));
 
@@ -730,7 +726,7 @@ public class Main extends JFrame
         JButton suggestBtn = accentButton("🔍 Find Workouts", ACCENT);
         filterCard.add(suggestBtn);
 
-        // ── Suggestion list ──────────────────────────────────────────────────
+        //Suggestion list
         suggestionList = new JList<>();
         suggestionList.setBackground(CARD);
         suggestionList.setForeground(TEXT);
@@ -744,7 +740,7 @@ public class Main extends JFrame
             TitledBorder.LEFT, TitledBorder.TOP,
             new Font("SansSerif", Font.PLAIN, 11), MUTED));
 
-        // ── Log card ─────────────────────────────────────────────────────────
+        //Log card
         JPanel logCard = card();
         logCard.setLayout(new FlowLayout(FlowLayout.LEFT, 14, 12));
         logCard.add(muted("Minutes done:"));
@@ -826,9 +822,10 @@ public class Main extends JFrame
         logMinField.setText("");
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  RANK PANEL
-    // ════════════════════════════════════════════════════════════════════════
+    
+    
+    
+    //Rank Panel
     private JPanel buildRankPanel()
     {
         JPanel p = darkPanel();
@@ -949,9 +946,9 @@ public class Main extends JFrame
         );
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  UI HELPERS
-    // ════════════════════════════════════════════════════════════════════════
+  
+    //Ui Helpers
+
     private JPanel darkPanel()
     {
         JPanel p = new JPanel();
@@ -1006,6 +1003,7 @@ public class Main extends JFrame
     {
         cb.setBackground(new Color(30, 36, 44));
         cb.setForeground(TEXT);
+        cb.setForeground(Color.BLACK);
         cb.setFont(new Font("SansSerif", Font.PLAIN, 13));
         cb.setBorder(BorderFactory.createLineBorder(BORDER));
     }
@@ -1118,7 +1116,12 @@ public class Main extends JFrame
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
+    
+    
+    
+    
+    
+    
     public static void main(String[] args)
     {
         try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); }

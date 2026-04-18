@@ -3,8 +3,8 @@ package projectcode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Manages the user's food selections and running calorie total.
+/*
+  Manages the user's food selections and running calorie total.
  */
 public class Food
 {
@@ -14,75 +14,84 @@ public class Food
     public Food()
     {
         this.totalCalories = 0.0;
-        this.selectedFood  = new LinkedHashMap<>();      // insertion-order for display
+        this.selectedFood  = new LinkedHashMap<>();      //create a new linked hash map
     }
 
-    // ── Select / Add ─────────────────────────────────────────────────────────
+    
 
-    /**
-     * Adds {@code amount} grams of {@code food} to the log.
-     * Silently ignores null food or negative amounts.
+    /*
+     selects a new food from the FoodList
      */
     public void selectFood(FoodList food, double amount)
     {
-        if (food == null || amount < 0.0) return;
-        amount = round1(amount);
-        selectedFood.merge(food, amount, Double::sum);
-        totalCalories += amount * food.getCaloriesPerGram();
+        if (food == null || amount < 0.0) 
+        	{ //checks if inputs are valid
+        	return;
+        	}
+        amount = round1(amount); //round
+        selectedFood.merge(food, amount, Double::sum); //add it to the linkedhashmap
+        totalCalories += amount * food.getCaloriesPerGram(); //increment the total calories
     }
 
-    // ── Remove ───────────────────────────────────────────────────────────────
+    
 
-    /**
-     * Removes {@code amountToRemove} grams of {@code food} from the log.
-     *
-     * @return {@code true} on success; {@code false} if the food isn't
-     *         present or the requested amount exceeds what was logged.
+    /*
+      Removes a food from the food list
      */
     public boolean removeFood(FoodList food, double amountToRemove)
     {
-        if (food == null || amountToRemove < 0.0) return false;
-        amountToRemove = round1(amountToRemove);
+        if (food == null || amountToRemove < 0.0)
+        	{ //checks if input is valid
+        	return false;
+        	}
+        amountToRemove = round1(amountToRemove); //round the amount to remove
 
-        double current = selectedFood.getOrDefault(food, 0.0);
-        if (current == 0.0 || amountToRemove > current) return false;
+        double current = selectedFood.getOrDefault(food, 0.0); //get the amount of grams the food currently has
+        if (current == 0.0 || amountToRemove > current)
+        	{ //if the amount the remove is greater then the current amount in there then exit function
+        	return false;
+        	}
 
-        totalCalories -= food.getCaloriesPerGram() * amountToRemove;
+        totalCalories -= food.getCaloriesPerGram() * amountToRemove; //deincrement the total calories
 
-        double remaining = round1(current - amountToRemove);
-        if (remaining == 0.0)
+        double remaining = round1(current - amountToRemove); //round
+        if (remaining == 0.0) //if there is no remaining grams of food remove it from the map
+        {
             selectedFood.remove(food);
+        }
         else
-            selectedFood.put(food, remaining);
+        {
+            selectedFood.put(food, remaining); //otherwise update the total
+        }
 
         return true;
     }
 
-    // ── Queries ──────────────────────────────────────────────────────────────
+    //Getters
 
-    /** Returns the total logged calories, rounded to 1 decimal place. */
+    // Returns the total logged calories, rounded to 1 decimal place. 
     public double getTotalCalories()
     {
         return round1(totalCalories);
     }
 
-    /** Returns a read-only view of the current food log (food → grams). */
+    // Returns the map
     public Map<FoodList, Double> getAllFood()
     {
         return selectedFood;
     }
 
-    /** Clears all food entries and resets the calorie counter. */
+    // Clears all food entries and resets the calorie counter. 
     public void reset()
     {
         selectedFood.clear();
         totalCalories = 0.0;
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    
 
     private static double round1(double v)
-    {
+    { //round function so we dont have to repeat it
         return Math.round(v * 10.0) / 10.0;
     }
 }
